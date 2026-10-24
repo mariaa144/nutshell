@@ -1,0 +1,22 @@
+# `COPY . .` in the Dockerfile bakes the whole checkout into the image.
+# Keep credentials, local state, and build artifacts out of it.
+
+# Credentials -- must never ship in an image
+lnd_hal
+mint_data
+.env
+.env.*
+!.env.example
+
+# Local state and large artifacts
+.git
+.venv
+.ruff_cache
+.mypy_cache
+.pytest_cache
+.github
+backups
+test_data
+junit.xml
+coverage.xml
+docker-build
