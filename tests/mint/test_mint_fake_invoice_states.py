@@ -1,3 +1,5 @@
+import time
+
 import pytest
 import pytest_asyncio
 
@@ -204,6 +206,44 @@ async def test_check_err_keeps_melt_pending(wallet: Wallet, ledger: Ledger):
     quote = await ledger.get_melt_quote(melt_quote.quote)
     assert quote.state == MeltQuoteState.pending
     assert all(s.pending for s in await proof_states(ledger, proofs))
+
+
+@pytest.mark.asyncio
+async def test_not_found_with_unexpired_invoice_keeps_melt_pending(
+    wallet: Wallet, ledger: Ledger
+):
+    """A payment the backend never recorded may still be dispatched by a
+    wedged pay call, so the quote must stay pending while the invoice lives."""
+    proofs, melt_quote = await quote_melt(wallet, description("UNKNOWN", "UNKNOWN"))
+
+    response = await ledger.melt(proofs=proofs, quote=melt_quote.quote)
+    assert response.state == MeltQuoteState.pending.value
+
+    quote = await ledger.get_melt_quote(melt_quote.quote)
+    assert quote.state == MeltQuoteState.pending
+    assert all(s.pending for s in await proof_states(ledger, proofs))
+
+
+@pytest.mark.asyncio
+async def test_not_found_with_expired_invoice_releases_proofs(
+    wallet: Wallet, ledger: Ledger, monkeypatch
+):
+    """Once the invoice has expired no payment attempt can succeed anymore
+    (the backend rejects expired invoices), so a NOT_FOUND payment must
+    fail the quote and release its pending proofs."""
+    proofs, melt_quote = await quote_melt(wallet, description("UNKNOWN", "UNKNOWN"))
+
+    response = await ledger.melt(proofs=proofs, quote=melt_quote.quote)
+    assert response.state == MeltQuoteState.pending.value
+    assert all(s.pending for s in await proof_states(ledger, proofs))
+
+    # fake invoices expire 3600s after creation -- move past that
+    real_now = time.time()
+    monkeypatch.setattr(time, "time", lambda: real_now + 7200)
+
+    quote = await ledger.get_melt_quote(melt_quote.quote)
+    assert quote.state == MeltQuoteState.unpaid
+    assert all(s.unspent for s in await proof_states(ledger, proofs))
 
 
 @pytest.mark.asyncio
