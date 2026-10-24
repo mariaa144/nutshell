@@ -12,3 +12,9 @@ WORKDIR /app
 COPY . .
 RUN poetry config virtualenvs.create false
 RUN poetry install --without dev --no-root
+
+EXPOSE 3338
+
+# poetry resolves the `mint` script from [tool.poetry.scripts] against the
+# /app source tree even though the root package is not installed (--no-root)
+CMD ["poetry", "run", "mint"]

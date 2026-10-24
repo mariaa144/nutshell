@@ -1,0 +1,41 @@
+# fly.io config for the Kinda Reckless Mint (cashu.boats).
+# Transcribed from the live app config (`flyctl config display`) so the
+# mint can be redeployed from this checkout. Secrets (MINT_PRIVATE_KEY,
+# MINT_LND_REST_MACAROON) are fly secrets, not file config.
+
+app = "breeching2928"
+primary_region = "iad"
+kill_timeout = "30s"
+
+[env]
+CASHU_DIR = "/data/.cashu"
+DEBUG = "FALSE"
+MINT_BACKEND_BOLT11_SAT = "LndRestWallet"
+MINT_DATABASE = "/data/mint"
+MINT_DERIVATION_PATH = "m/0'/0'/0'"
+MINT_DERIVATION_PATH_LIST = "[\"m/0'/0'/0'\"]"
+MINT_INFO_CONTACT = "[[\"email\",\"deodorize_average752@aleeas.com\"],[\"nostr\",\"npub18ehswvhxvl7992y2999lyq8lnnkyppn6ald5hfdmuvtcjmlu3v6sh9vrmc\"]]"
+MINT_INFO_DESCRIPTION = "Reckless mint for the brave"
+MINT_INFO_DESCRIPTION_LONG = "Mint for family and friends of the administrator. If you don't know how you found this mint then beware, it may shutdown at anytime, without warning!"
+MINT_INFO_MOTD = "Go forth and spend with reckless abandon!"
+MINT_INFO_NAME = "Kinda Reckless Mint"
+MINT_LISTEN_HOST = "0.0.0.0"
+MINT_LISTEN_PORT = "3338"
+MINT_LND_ALLOW_SELF_PAYMENT = "TRUE"
+MINT_LND_REST_ENDPOINT = "https://hal.note-teeth.ts.net"
+
+[[mounts]]
+source = "nutshell_data"
+destination = "/data"
+initial_size = "1gb"
+
+[http_service]
+internal_port = 3338
+force_https = true
+auto_stop_machines = true
+auto_start_machines = true
+min_machines_running = 0
+processes = ["app"]
+
+[[vm]]
+size = "shared-cpu-2x"
