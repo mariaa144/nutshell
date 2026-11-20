@@ -22,7 +22,10 @@ MINT_INFO_NAME = "Kinda Reckless Mint"
 MINT_LISTEN_HOST = "0.0.0.0"
 MINT_LISTEN_PORT = "3338"
 MINT_LND_ALLOW_SELF_PAYMENT = "TRUE"
-MINT_LND_REST_ENDPOINT = "https://hal.note-teeth.ts.net"
+# hal's tailnet-only LND REST serve (hosts/hal/tailscale.nix in
+# nixos-config) — reached directly over the tailnet via the entrypoint's
+# tailscaled (TUN mode), no longer through the public Tailscale Funnel.
+MINT_LND_REST_ENDPOINT = "https://hal.note-teeth.ts.net:10443"
 
 [[mounts]]
 source = "nutshell_data"
